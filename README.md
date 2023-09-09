@@ -1,0 +1,2 @@
+# Bidmaster
+Manages Campaigns
