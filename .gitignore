@@ -161,6 +161,6 @@ cython_debug/
 
 #Custom
 
-.odt
-.pdf
-.csv
+*.odt
+*.pdf
+*.csv
