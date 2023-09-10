@@ -47,6 +47,7 @@ def generate_labels_from_csv(csv_file):
 
 def print_labels():
     subprocess.run(['lp', 'labels.pdf'])
+    os.remove('labels.pdf')  # Delete the labels.pdf file after printing
 
 if __name__ == "__main__":
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # This will point to basedir
