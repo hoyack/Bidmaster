@@ -1,0 +1,7 @@
+Place .ODF LibreOffice Writer files here.
+
+Whatever placeholder text is mapped against the Source CSV will be merged.
+
+Placeholder can be specified in the Maps file .json template.
+
+For example in the .ODF if any instance of `{{first name}}` appears then it can be merged and replaced based on the mapped field.

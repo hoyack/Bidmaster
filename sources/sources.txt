@@ -1,0 +1,5 @@
+Place CSV files in this directory. Call them with the -csv flag in the scripts.
+
+This path is the default path the scripts look for so if your CSV is in a path relative to this one you would need to adjust accordingly.
+
+CSV fields are mapped against the `maps` directory in your referenced .json mapping template.
