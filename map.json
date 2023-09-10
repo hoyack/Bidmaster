@@ -1,7 +1,6 @@
 {
     "mergefields": {
-        "{{First Name}}": "First Name",
-        "{{some field}}": "Some Field"
+        "{{First Name}}": "First Name"
     },
     "filename": {
         "FilenameA": "First Name",
