@@ -49,11 +49,16 @@ def print_labels():
     subprocess.run(['lp', 'labels.pdf'])
 
 if __name__ == "__main__":
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # This will point to basedir
+
     parser = argparse.ArgumentParser(description='Generate and print labels from CSV.')
-    parser.add_argument('-csv', required=True, help='Path to the CSV file.')
+    parser.add_argument('-csv', help='Path to the CSV file.', required=True)
 
     args = parser.parse_args()
 
+    # If the provided path is not absolute, assume it's within the sources directory
+    if not os.path.isabs(args.csv):
+        args.csv = os.path.join(base_dir, 'sources', args.csv)
+
     generate_labels_from_csv(args.csv)
     print_labels()
-

@@ -2,8 +2,11 @@
 Performs Mail Merges and Prints Labels using LibreOffice Writer and a CSV file.
 Prints to system default printer if the `-print` flag is provided.
 
-python mailmerge.py -odt asprin.odt -csv export11.csv -f devops -map map.json -print
-python labels.py -csv export11.csv
+Run the following code to perform a mail merge:
+`python mailmerge.py -odt template.odt -csv source.csv -f foldername -map map.json -print`
+
+Run the following code to print labels (Currently Avery 5260 template is supported)
+`python labels.py -csv source.csv`
 
 
 Create directories:
