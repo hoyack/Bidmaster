@@ -1,12 +1,19 @@
 import csv
 import os
 import argparse
+import json
 from copy import deepcopy
 from odf import text, teletype
 from odf.opendocument import load
 import subprocess
 
-def modify_odt(template_file, csv_file, folder, should_print=False):
+def load_mappings(mappings_file='map.json'):
+    with open(mappings_file, 'r') as f:
+        return json.load(f)
+
+def modify_odt(template_file, csv_file, folder, should_print):
+    mappings = load_mappings()
+    
     # Load the template ODT file
     template = load(template_file)
 
@@ -21,27 +28,34 @@ def modify_odt(template_file, csv_file, folder, should_print=False):
             # Make a deep copy of the document
             doc = deepcopy(template)
 
-            # Replace the placeholder
+            replacements = []
             for paragraph in doc.text.getElementsByType(text.P):
                 inner_text = teletype.extractText(paragraph)
-                replaced_text = inner_text.replace("{{First Name}}", row['First Name'])
-                if replaced_text != inner_text:
-                    new_paragraph = text.P(text=replaced_text)
-                    doc.text.insertBefore(new_paragraph, paragraph)
-                    doc.text.removeChild(paragraph)
+                replaced = False
+                for placeholder, csv_column in mappings['mergefields'].items():
+                    if placeholder in inner_text and csv_column in row:
+                        inner_text = inner_text.replace(placeholder, row[csv_column])
+                        replaced = True
+                if replaced:
+                    replacements.append((paragraph, text.P(text=inner_text)))
+
+            # Apply the replacements
+            for old_paragraph, new_paragraph in replacements:
+                doc.text.insertBefore(new_paragraph, old_paragraph)
+                doc.text.removeChild(old_paragraph)
 
             # Determine the output filename and save
-            output_filename = os.path.join(folder, f"{row['First Name']} - {row['Company Name']}.odt")
+            output_filename = os.path.join(folder, f"{row[mappings['filename']['FilenameA']]} - {row.get(mappings['filename']['FilenameB'], 'Unnamed')}.odt")
             doc.save(output_filename)
             print(f"Written: {output_filename}")
-            
+
             # Convert to PDF and remove the ODT
             odt_to_pdf(output_filename, folder)
             os.remove(output_filename)
-    
-    # Print the generated PDFs if the flag is provided
+
     if should_print:
         print_files(folder)
+
 
 def odt_to_pdf(odt_file, output_folder):
     # Convert using LibreOffice
@@ -50,16 +64,15 @@ def odt_to_pdf(odt_file, output_folder):
 def print_files(directory):
     files = os.listdir(directory)
     pdf_files = [f for f in files if f.lower().endswith('.pdf')]
-
     for pdf_file in pdf_files:
         subprocess.run(['lp', os.path.join(directory, pdf_file)])
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Replace {{First Name}} in an ODT file using a CSV and optionally print the generated PDFs.")
+    parser = argparse.ArgumentParser(description="Replace placeholders in an ODT file using a CSV based on a JSON mapping.")
     parser.add_argument("-odt", required=True, help="Path to the ODT file.")
     parser.add_argument("-csv", required=True, help="Path to the CSV file.")
     parser.add_argument("-f", required=True, help="Output folder name.")
-    parser.add_argument('-print', action='store_true', help="Print the generated PDFs if provided.")
+    parser.add_argument("-print", action="store_true", help="Print the PDF files after creation.")
 
     args = parser.parse_args()
     modify_odt(args.odt, args.csv, args.f, args.print)

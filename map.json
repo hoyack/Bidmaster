@@ -1,0 +1,10 @@
+{
+    "mergefields": {
+        "{{First Name}}": "First Name",
+        "{{some field}}": "Some Field"
+    },
+    "filename": {
+        "FilenameA": "First Name",
+        "FilenameB": "Company Name"
+    }
+}
