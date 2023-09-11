@@ -8,11 +8,6 @@ Run the following code to perform a mail merge:
 Run the following code to print labels (Currently Avery 5260 template is supported)
 `python labels.py -csv source.csv`
 
-
-Create directories:
-/templates
-/sources
-
 place .ODT file template in /templates and .CSV source in /sources
 
 -odt is the template filename of the .ODT file you want to use
