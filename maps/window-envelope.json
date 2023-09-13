@@ -1,0 +1,14 @@
+{
+    "mergefields": {
+        "{{Company Name}}": "Company Name",
+        "{{Name}}": "Name",
+        "{{Street Address 1}}": "Street Address 1",
+        "{{City}}": "City",
+        "{{State}}": "State",
+        "{{Postal Code}}": "Postal Code"
+    },
+    "filename": {
+        "FilenameA": "First Name",
+        "FilenameB": "Company Name"
+    }
+}

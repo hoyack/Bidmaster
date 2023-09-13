@@ -31,15 +31,21 @@ def modify_odt(template_odt, csv_file, output_folder, map_file):
 
         for row in reader:
             doc = load(template_odt)
-            for paragraph in doc.getElementsByType(TextP):
-                for field, column_name in mappings['mergefields'].items():
-                    text_content = teletype.extractText(paragraph)
-                    if field in text_content:
-                        new_text_content = text_content.replace(field, row.get(column_name, ''))
-                        new_paragraph = TextP(text=new_text_content)
-                        doc.text.insertBefore(new_paragraph, paragraph)
-                        doc.text.removeChild(paragraph)
             
+            for paragraph in doc.getElementsByType(TextP):
+                text_content = teletype.extractText(paragraph)
+                modified_text_content = text_content  # This will store the potentially modified text
+
+                for field, column_name in mappings['mergefields'].items():
+                    if field in modified_text_content:
+                        modified_text_content = modified_text_content.replace(field, row.get(column_name, ''))
+
+                # If the paragraph text has been modified, then rebuild the paragraph
+                if modified_text_content != text_content:
+                    new_paragraph = TextP(text=modified_text_content)
+                    paragraph.parentNode.insertBefore(new_paragraph, paragraph)
+                    paragraph.parentNode.removeChild(paragraph)
+
             output_filename = os.path.join(output_folder, f"{row[mappings['filename']['FilenameA']]} - {row.get(mappings['filename']['FilenameB'], 'Unnamed')}.odt")
             doc.save(output_filename)
             print(f"Written: {output_filename}")
