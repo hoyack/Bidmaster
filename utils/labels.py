@@ -53,39 +53,51 @@ def avery_5195(csv_file):
 
     c.save()
 
-
 def avery_5260(csv_file):
+    # Label dimensions
     WIDTH, HEIGHT = 2.625*inch, 1*inch
     MARGIN_TOP, MARGIN_LEFT = 0.5*inch, 0.1875*inch
     COLUMNS, ROWS = 3, 10
+    FONT_SIZE = 10
     PAGE_WIDTH, PAGE_HEIGHT = letter
     
+    DRIFT_ADJUSTMENT = 0.02*inch  # Adjust this value based on the observed drift
+    
     c = canvas.Canvas("labels.pdf", pagesize=letter)
-    c.setFont("Helvetica", 10)
+    c.setFont("Helvetica", FONT_SIZE)
 
+    records = []  # Collecting records to list to help with determining the last record
     with open(csv_file, 'r') as file:
         reader = csv.DictReader(file)
-        row, col = 0, 0
-
         for record in reader:
-            x = MARGIN_LEFT + (WIDTH * col)
-            y = PAGE_HEIGHT - MARGIN_TOP - (HEIGHT * row)
+            records.append(record)
 
-            # Design the label centered with tighter spacing
-            c.drawCentredString(x + WIDTH/2, y - 12, record['Company Name'])
-            c.drawCentredString(x + WIDTH/2, y - 27, "Attn: " + record['Name'])
-            c.drawCentredString(x + WIDTH/2, y - 42, record['Street Address 1'])
-            c.drawCentredString(x + WIDTH/2, y - 57, f"{record['City']}, {record['State']} {record['Postal Code']}")
+    row, col = 0, 0
 
-            col += 1
-            if col >= COLUMNS:
-                col = 0
-                row += 1
-            if row >= ROWS:
+    for idx, record in enumerate(records):
+        x = MARGIN_LEFT + (WIDTH * col)
+        y = PAGE_HEIGHT - MARGIN_TOP - (HEIGHT * row) - (DRIFT_ADJUSTMENT * row)  # Adjusted for drift
+            
+        if col == 2:  # Adjust for the third column (0-based indexing)
+            x += 0.3937*inch
+
+        # Design the label centered with tighter spacing
+        c.drawCentredString(x + WIDTH/2, y - 12, record['Company Name'])
+        c.drawCentredString(x + WIDTH/2, y - 24, "Attn: " + record['Name'])  # Reduced the gap
+        c.drawCentredString(x + WIDTH/2, y - 36, record['Street Address 1'])  # Moved upwards
+        c.drawCentredString(x + WIDTH/2, y - 48, f"{record['City']}, {record['State']} {record['Postal Code']}")  # Moved upwards
+
+        col += 1
+        if col >= COLUMNS:
+            col = 0
+            row += 1
+        if row >= ROWS:
+            if idx != len(records) - 1:  # Only add a new page if this isn't the last record
                 c.showPage()
+                c.setFont("Helvetica", FONT_SIZE)  # Reset the font size for the new page
                 row, col = 0, 0
 
-        c.save()
+    c.save()
 
 def print_labels():
     subprocess.run(['lp', 'labels.pdf'])
