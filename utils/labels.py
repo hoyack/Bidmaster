@@ -31,7 +31,7 @@ def avery_5195(csv_file):
     
     row, col = 0, 0
 
-    for record in records:
+    for idx, record in enumerate(records):
         x = MARGIN_LEFT + (WIDTH * col) + column_adjustments[col]
         y = PAGE_HEIGHT - MARGIN_TOP - (HEIGHT * row) + (0.01*inch * row)  # Adjusted increment
 
@@ -46,12 +46,12 @@ def avery_5195(csv_file):
             col = 0
             row += 1
         if row >= ROWS:
-            c.showPage()
-            row, col = 0, 0
+            if idx != len(records) - 1:  # Only add a new page if this isn't the last record
+                c.showPage()
+                c.setFont("Helvetica", FONT_SIZE)  # Reset the font size for the new page
+                row, col = 0, 0
 
     c.save()
-
-
 
 
 def avery_5260(csv_file):
@@ -110,4 +110,3 @@ if __name__ == "__main__":
         avery_5195(args.csv)
 
     print_labels()
-
