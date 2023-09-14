@@ -25,7 +25,7 @@ def avery_5195(csv_file):
     WIDTH, HEIGHT = 1.6929*inch, 0.6299*inch + 0.03937*inch  # Added 0.1 cm to the HEIGHT
 
     # Updated margins
-    MARGIN_TOP, MARGIN_LEFT = 0.5906*inch, 0.4724*inch
+    MARGIN_TOP, MARGIN_LEFT = 0.5906*inch, 0.4724*inch - 0.19685*inch  # Subtracting half a cm from the left margin
 
     COLUMNS, ROWS = 4, 15
     FONT_SIZE = 8

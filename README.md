@@ -28,3 +28,5 @@ The map.json example includes 2 sections. The 1st is the fields to mailmerge.
 The 2nd is the filename structure to write.
 The default format is "FieldA - FieldB.pdf"
     To modify this format, the change would be made to /utils/odt_modifier.py around line 43.
+
+Logo.png for return labels should be 171x171 px
