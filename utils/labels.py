@@ -6,6 +6,18 @@ from reportlab.lib.pagesizes import letter
 from reportlab.lib.units import inch
 from reportlab.pdfgen import canvas
 
+from reportlab.lib.utils import ImageReader
+import urllib.request
+
+def fetch_image_from_url(url):
+    """
+    Fetches an image from a URL and returns an ImageReader object.
+    """
+    # Use a context manager to fetch the image from the URL
+    with urllib.request.urlopen(url) as response:
+        # Create and return an ImageReader object from the fetched data
+        return ImageReader(response)
+
 def avery_5195(csv_file):
     PAGE_WIDTH, PAGE_HEIGHT = letter  # Define page dimensions first
     
@@ -17,6 +29,7 @@ def avery_5195(csv_file):
 
     COLUMNS, ROWS = 4, 15
     FONT_SIZE = 8
+    LOGO_PADDING = 0.03937*inch  # 1/10th of a cm
 
     column_adjustments = [0, 0.3937*inch, 2*0.3937*inch, 3*0.3937*inch]  # Adjustments for the 2nd, 3rd, and 4th columns in inches
 
@@ -35,11 +48,63 @@ def avery_5195(csv_file):
         x = MARGIN_LEFT + (WIDTH * col) + column_adjustments[col]
         y = PAGE_HEIGHT - MARGIN_TOP - (HEIGHT * row) + (0.01*inch * row)  # Adjusted increment
 
-        # Placing the text on the label
-        c.drawString(x, y - 8, record['Company'])
-        c.drawString(x, y - 20, record['Address 1'])
-        c.drawString(x, y - 32, record['Address 2'])
-        c.drawString(x, y - 44, f"{record['City']}, {record['State']}, {record['Zip']}")
+        # Fetch logo from URL mentioned in the CSV
+        logo_url = record.get('Logo', None)
+        if logo_url:
+            logo = fetch_image_from_url(logo_url)
+            logo_width = HEIGHT - (2 * LOGO_PADDING)
+            logo_height = HEIGHT - (2 * LOGO_PADDING)
+            
+            # Draw the logo on the label
+            c.drawImage(logo, x + LOGO_PADDING, y - logo_height - LOGO_PADDING, width=logo_width, height=logo_height)
+
+            # Adjust the x-coordinate to draw text to the right of the logo
+            text_start_x = x + logo_width + (2 * LOGO_PADDING)
+        else:
+            text_start_x = x
+
+        # Drawing text fields
+        c.drawString(text_start_x, y - 8, record['Company'])
+        c.drawString(text_start_x, y - 20, record['Address 1'])
+        c.drawString(text_start_x, y - 32, record['Address 2'])
+        c.drawString(text_start_x, y - 44, f"{record['City']}, {record['State']}, {record['Zip']}")
+
+        col += 1
+        if col >= COLUMNS:
+            col = 0
+            row += 1
+        if row >= ROWS:
+            if idx != len(records) - 1:  # Only add a new page if this isn't the last record
+                c.showPage()
+                c.setFont("Helvetica", FONT_SIZE)  # Reset the font size for the new page
+                row, col = 0, 0
+
+    c.save()
+
+    # Getting the size of the logo (it should maintain its aspect ratio within the space allowed by HEIGHT)
+    logo_width = HEIGHT - (2 * LOGO_PADDING)
+    logo_height = HEIGHT - (2 * LOGO_PADDING)
+
+    c = canvas.Canvas("labels.pdf", pagesize=letter)
+    c.setFont("Helvetica", FONT_SIZE)
+    
+    row, col = 0, 0
+
+    for idx, record in enumerate(records):
+        x = MARGIN_LEFT + (WIDTH * col) + column_adjustments[col]
+        y = PAGE_HEIGHT - MARGIN_TOP - (HEIGHT * row) + (0.01*inch * row)  # Adjusted increment
+
+        # Draw the logo on the label
+        c.drawImage(logo, x + LOGO_PADDING, y - logo_height - LOGO_PADDING, width=logo_width, height=logo_height)
+
+        # Adjust the x-coordinate to draw text to the right of the logo
+        text_start_x = x + logo_width + (2 * LOGO_PADDING)
+
+        # Drawing text fields
+        c.drawString(text_start_x, y - 8, record['Company'])
+        c.drawString(text_start_x, y - 20, record['Address 1'])
+        c.drawString(text_start_x, y - 32, record['Address 2'])
+        c.drawString(text_start_x, y - 44, f"{record['City']}, {record['State']}, {record['Zip']}")
 
         col += 1
         if col >= COLUMNS:
