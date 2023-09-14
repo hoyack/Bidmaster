@@ -19,19 +19,23 @@ def fetch_image_from_url(url):
         return ImageReader(response)
 
 def avery_5195(csv_file):
-    PAGE_WIDTH, PAGE_HEIGHT = letter  # Define page dimensions first
-    
+    PAGE_WIDTH, PAGE_HEIGHT = letter
     # Label dimensions
-    WIDTH, HEIGHT = 1.6929*inch, 0.6299*inch + 0.03937*inch  # Added 0.1 cm to the HEIGHT
+    WIDTH, HEIGHT = 1.6929*inch, 0.6299*inch + 0.03937*inch
 
-    # Updated margins
-    MARGIN_TOP, MARGIN_LEFT = 0.5906*inch, 0.4724*inch - 0.19685*inch  # Subtracting half a cm from the left margin
+    # Margins
+    MARGIN_TOP, MARGIN_LEFT = 0.5906*inch, 0.4724*inch
 
     COLUMNS, ROWS = 4, 15
     FONT_SIZE = 8
-    LOGO_PADDING = 0.03937*inch  # 1/10th of a cm
+    LOGO_PADDING = 0.03937*inch
+    column_adjustments = [0, 0.3937*inch, 1.9*0.3937*inch, 2.75*0.3937*inch]
 
-    column_adjustments = [0, 0.3937*inch, 2*0.3937*inch, 3*0.3937*inch]  # Adjustments for the 2nd, 3rd, and 4th columns in inches
+    LOGO_SHIFT_LEFT = 1 * 0.295275*inch  # Shift logo 1 cm to the left
+    TEXT_SHIFT_LEFT = 0.1 * 0.7874*inch  # Shift text 1/10 cm to the left
+
+    # Adjust for the slight vertical drift. This value can be tweaked.
+    VERTICAL_ADJUSTMENT = 0.01*inch
 
     records = []
     with open(csv_file, 'r') as file:
@@ -46,59 +50,25 @@ def avery_5195(csv_file):
 
     for idx, record in enumerate(records):
         x = MARGIN_LEFT + (WIDTH * col) + column_adjustments[col]
-        y = PAGE_HEIGHT - MARGIN_TOP - (HEIGHT * row) + (0.01*inch * row)  # Adjusted increment
+        y = PAGE_HEIGHT - MARGIN_TOP - (HEIGHT * row) + (VERTICAL_ADJUSTMENT * row)  # Adjusted for drift
 
         # Fetch logo from URL mentioned in the CSV
         logo_url = record.get('Logo', None)
         if logo_url:
             logo = fetch_image_from_url(logo_url)
-            logo_width = HEIGHT - (2 * LOGO_PADDING)
-            logo_height = HEIGHT - (2 * LOGO_PADDING)
             
-            # Draw the logo on the label
-            c.drawImage(logo, x + LOGO_PADDING, y - logo_height - LOGO_PADDING, width=logo_width, height=logo_height)
+            original_logo_width = HEIGHT - (2 * LOGO_PADDING)
+            logo_width = original_logo_width * 0.5
+            logo_height = original_logo_width * 0.5
 
-            # Adjust the x-coordinate to draw text to the right of the logo
-            text_start_x = x + logo_width + (2 * LOGO_PADDING)
+            x_adjusted_for_logo = x + (original_logo_width - logo_width) / 2 - LOGO_SHIFT_LEFT
+            y_adjusted_for_logo = y - (HEIGHT + logo_height) / 2
+
+            c.drawImage(logo, x_adjusted_for_logo, y_adjusted_for_logo, width=logo_width, height=logo_height)
+
+            text_start_x = x + logo_width + (2 * LOGO_PADDING) - TEXT_SHIFT_LEFT
         else:
             text_start_x = x
-
-        # Drawing text fields
-        c.drawString(text_start_x, y - 8, record['Company'])
-        c.drawString(text_start_x, y - 20, record['Address 1'])
-        c.drawString(text_start_x, y - 32, record['Address 2'])
-        c.drawString(text_start_x, y - 44, f"{record['City']}, {record['State']}, {record['Zip']}")
-
-        col += 1
-        if col >= COLUMNS:
-            col = 0
-            row += 1
-        if row >= ROWS:
-            if idx != len(records) - 1:  # Only add a new page if this isn't the last record
-                c.showPage()
-                c.setFont("Helvetica", FONT_SIZE)  # Reset the font size for the new page
-                row, col = 0, 0
-
-    c.save()
-
-    # Getting the size of the logo (it should maintain its aspect ratio within the space allowed by HEIGHT)
-    logo_width = HEIGHT - (2 * LOGO_PADDING)
-    logo_height = HEIGHT - (2 * LOGO_PADDING)
-
-    c = canvas.Canvas("labels.pdf", pagesize=letter)
-    c.setFont("Helvetica", FONT_SIZE)
-    
-    row, col = 0, 0
-
-    for idx, record in enumerate(records):
-        x = MARGIN_LEFT + (WIDTH * col) + column_adjustments[col]
-        y = PAGE_HEIGHT - MARGIN_TOP - (HEIGHT * row) + (0.01*inch * row)  # Adjusted increment
-
-        # Draw the logo on the label
-        c.drawImage(logo, x + LOGO_PADDING, y - logo_height - LOGO_PADDING, width=logo_width, height=logo_height)
-
-        # Adjust the x-coordinate to draw text to the right of the logo
-        text_start_x = x + logo_width + (2 * LOGO_PADDING)
 
         # Drawing text fields
         c.drawString(text_start_x, y - 8, record['Company'])
