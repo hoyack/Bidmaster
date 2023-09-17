@@ -16,15 +16,16 @@ def send_request(id_value):
     response = requests.get(endpoint, params=params)
     return response
 
-def process_csv(csv_file, wait_time):
-    with open(csv_file, 'r') as f:
+def process_csv(csv_path, wait_time):
+    with open(csv_path, 'r') as f:
         reader = csv.DictReader(f)
-        if "id" not in reader.fieldnames:
-            print("Error: 'id' column not found in the CSV.")
+
+        if "Id" not in reader.fieldnames:
+            print("Error: 'Id' column not found in the CSV.")
             return
 
         for row in reader:
-            id_value = row["id"]
+            id_value = row["Id"]
             response = send_request(id_value)
             if response:
                 print(f"Sent request for ID {id_value}. Response status: {response.status_code}")
@@ -32,8 +33,9 @@ def process_csv(csv_file, wait_time):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Send GET requests for each ID in a CSV file.")
-    parser.add_argument('-csv', required=True, help='Path to the CSV file.')
+    parser.add_argument('-csv', required=True, help='Path to the CSV file within the sources directory.')
     parser.add_argument('--wait', default=5, type=int, help='Wait time in seconds between requests. Default is 5 seconds.')
     args = parser.parse_args()
-
-    process_csv(args.csv, args.wait)
+    
+    csv_path = os.path.join(os.path.dirname(__file__), '..', 'sources', args.csv)
+    process_csv(csv_path, args.wait)  # Pass the correct path
