@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 # Argument parsing setup
 parser = argparse.ArgumentParser(description="Process API data and save to CSV.")
 parser.add_argument('-o', '--output', help="Name of the output CSV file.", default="output.csv")
+parser.add_argument('--batch', help="Number of rows to process in a batch.", type=int)
 args = parser.parse_args()
 
 # Define the default output directory and filename
@@ -46,8 +47,12 @@ if response.status_code == 200:
             writer = csv.DictWriter(csv_file, fieldnames=headers)
             writer.writeheader()
             
-            # Loop through the API response data
+            # Limit the number of rows based on the batch size if provided
+            processed_rows = 0
             for item in response_data:
+                if args.batch and processed_rows >= args.batch:
+                    break
+
                 if "data" in item:
                     row_data = {}
                     for key in headers:
@@ -57,6 +62,8 @@ if response.status_code == 200:
                         else:
                             row_data[key] = item["data"].get(key, None)
                     writer.writerow(row_data)
+                    processed_rows += 1
+
             print(f"CSV file generated successfully at {output_path}.")
     else:
         print("Response data is not in the expected format.")

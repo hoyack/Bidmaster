@@ -30,3 +30,29 @@ The default format is "FieldA - FieldB.pdf"
     To modify this format, the change would be made to /utils/odt_modifier.py around line 43.
 
 Logo.png for return labels should be 171x171 px
+
+Usage:
+
+# Pull Batch
+python utils/process.py -o batch.csv --batch 30
+
+# Add WIP Flag to Batch
+python utils/keap.py -csv batch.csv --action 3
+
+# Generate Shipping Labels
+python utils/labels.py -csv batch.csv -avery 5260
+
+# Run Mail Merge
+python mailmerge.py -odt template.odt -csv batch.csv -f output -print
+
+# Generate Return Labels
+python utils/labels.py -csv return.csv -avery 5195
+
+# Mark Sent
+python utils/keap.py -csv batch.csv --action 2
+
+# Remove WIP Flag
+python utils/keap.py -csv batch.csv --action 1
+
+# Delete Cache
+python utils/keap.py -csv batch.csv --action 5
