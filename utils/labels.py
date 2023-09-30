@@ -24,18 +24,23 @@ def avery_5195(csv_file):
     WIDTH, HEIGHT = 1.6929*inch, 0.6299*inch + 0.03937*inch
 
     # Margins
-    MARGIN_TOP, MARGIN_LEFT = 0.5906*inch, 0.4724*inch
+    LINE_HEIGHT = 8  # Approximate height for one line with the given font size
+    MARGIN_TOP, MARGIN_LEFT = 0.5906*inch - 0.3937*inch + (LINE_HEIGHT/72.0*inch), 0.4724*inch  # Adjusted the top margin by 1 cm and one line height
 
     COLUMNS, ROWS = 4, 15
     FONT_SIZE = 8
     LOGO_PADDING = 0.03937*inch
-    column_adjustments = [0, 0.3937*inch, 1.9*0.3937*inch, 2.75*0.3937*inch]
-
+    column_adjustments = [0, 0.3937*inch, 2.035*0.3937*inch, 3.005*0.3937*inch]
     LOGO_SHIFT_LEFT = 1 * 0.295275*inch  # Shift logo 1 cm to the left
     TEXT_SHIFT_LEFT = 0.1 * 0.7874*inch  # Shift text 1/10 cm to the left
 
-    # Adjust for the slight vertical drift. This value can be tweaked.
-    VERTICAL_ADJUSTMENT = 0.01*inch
+    CONTENT_START_Y_OFFSET = 0.1*inch  # 1/10th of an inch from top of each label
+
+    def compute_drift(row):
+        # This will compute a progressive drift. Row 1 will have minimal drift, 
+        # and by row 15, the cumulative effect will be the full drift amount.
+        MAX_DRIFT = 0.25*inch - 0.05*inch  # Adjusted the maximum drift value
+        return MAX_DRIFT * (row/15.0)
 
     records = []
     with open(csv_file, 'r') as file:
@@ -45,18 +50,17 @@ def avery_5195(csv_file):
 
     c = canvas.Canvas("labels.pdf", pagesize=letter)
     c.setFont("Helvetica", FONT_SIZE)
-    
+
     row, col = 0, 0
 
     for idx, record in enumerate(records):
         x = MARGIN_LEFT + (WIDTH * col) + column_adjustments[col]
-        y = PAGE_HEIGHT - MARGIN_TOP - (HEIGHT * row) + (VERTICAL_ADJUSTMENT * row)  # Adjusted for drift
+        y = PAGE_HEIGHT - MARGIN_TOP - (HEIGHT * row) - CONTENT_START_Y_OFFSET - compute_drift(row)
 
         # Fetch logo from URL mentioned in the CSV
         logo_url = record.get('Logo', None)
         if logo_url:
             logo = fetch_image_from_url(logo_url)
-            
             original_logo_width = HEIGHT - (2 * LOGO_PADDING)
             logo_width = original_logo_width * 0.5
             logo_height = original_logo_width * 0.5
@@ -65,7 +69,6 @@ def avery_5195(csv_file):
             y_adjusted_for_logo = y - (HEIGHT + logo_height) / 2
 
             c.drawImage(logo, x_adjusted_for_logo, y_adjusted_for_logo, width=logo_width, height=logo_height)
-
             text_start_x = x + logo_width + (2 * LOGO_PADDING) - TEXT_SHIFT_LEFT
         else:
             text_start_x = x

@@ -2,6 +2,20 @@
 Performs Mail Merges and Prints Labels using LibreOffice Writer and a CSV file.
 Prints to system default printer if the `-print` flag is provided.
 
+#Installation
+#Tested on Debian
+```
+sudo apt-get install libreoffice
+sudo apt-get install python3
+sudo apt-get install libcups2-dev
+pip install virtualenv
+git clone https://github.com/hoyack/Bidmaster.git
+cd Bidmaster
+python3 -m venv env
+source env/bin/activate
+pip install -r requirements.txt
+```
+
 Run the following code to perform a mail merge:
 `python mailmerge.py -odt template.odt -csv source.csv -f foldername -map map.json -print`
 
