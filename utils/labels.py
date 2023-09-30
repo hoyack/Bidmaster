@@ -24,13 +24,13 @@ def avery_5195(csv_file):
     WIDTH, HEIGHT = 1.6929*inch, 0.6299*inch + 0.03937*inch
 
     # Margins
-    LINE_HEIGHT = 8  # Approximate height for one line with the given font size
+    LINE_HEIGHT = 8  # Adjusted height for one line with the given font size
     MARGIN_TOP, MARGIN_LEFT = 0.5906*inch - 0.3937*inch + (LINE_HEIGHT/72.0*inch), 0.4724*inch  # Adjusted the top margin by 1 cm and one line height
 
     COLUMNS, ROWS = 4, 15
     FONT_SIZE = 8
     LOGO_PADDING = 0.03937*inch
-    column_adjustments = [0, 0.3937*inch, 2.035*0.3937*inch, 3.005*0.3937*inch]
+    column_adjustments = [-0.1 * 0.3937*inch, 0.3937*inch, 2.035*0.3937*inch, 3.005*0.3937*inch]
     LOGO_SHIFT_LEFT = 1 * 0.295275*inch  # Shift logo 1 cm to the left
     TEXT_SHIFT_LEFT = 0.1 * 0.7874*inch  # Shift text 1/10 cm to the left
 
