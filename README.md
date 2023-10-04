@@ -8,6 +8,7 @@ Prints to system default printer if the `-print` flag is provided.
 sudo apt-get install libreoffice
 sudo apt-get install python3
 sudo apt-get install libcups2-dev
+sudo apt-get install ffmpeg
 pip install virtualenv
 git clone https://github.com/hoyack/Bidmaster.git
 cd Bidmaster
